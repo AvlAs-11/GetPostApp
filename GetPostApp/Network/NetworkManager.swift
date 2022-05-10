@@ -16,12 +16,10 @@ final class NetworkManager {
     static public func getInfo(with page: Int, completion: @escaping (Result<[Content], Error>) -> Void) {
         
         let pageToString = String(page)
-        
         let stringUrl = getUrl + pageToString
         
-        guard let url = URL(string: stringUrl) else { return
-            
-        }
+        guard let url = URL(string: stringUrl) else { return }
+        
         let task = URLSession.shared.dataTask(with: url) { (data, _, error) in
             if let error = error {
                 completion(.failure(error))
@@ -49,7 +47,7 @@ final class NetworkManager {
         let fileName = "Image.jpeg"
         let url = URL(string: postUrl)
         
-        guard let url = url else { return }
+        guard let url = url, let image = image else { return }
         
         let nameField = "name"
         let nameValue = name
@@ -74,7 +72,7 @@ final class NetworkManager {
         data.append("\r\n--\(boundary)\r\n".data(using: .utf8)!)
         data.append("Content-Disposition: form-data; name=\"photo\"; filename=\"\(fileName)\"\r\n".data(using: .utf8)!)
         data.append("Content-Type: image/jpeg\r\n\r\n".data(using: .utf8)!)
-        data.append((image?.jpegData(compressionQuality: 1))!)
+        data.append((image.jpegData(compressionQuality: 1))!)
         
         data.append("\r\n--\(boundary)\r\n".data(using: .utf8)!)
         data.append("Content-Disposition: form-data; name=\"\(idField)\"\r\n\r\n".data(using: .utf8)!)
