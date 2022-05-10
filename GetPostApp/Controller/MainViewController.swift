@@ -63,6 +63,7 @@ extension MainViewController: UITableViewDelegate, UITableViewDataSource {
         print(self.content[indexPath.row].id)
         selectedRow = indexPath.row
         tableView.deselectRow(at: indexPath, animated: true)
+        openCamera()
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
@@ -84,3 +85,26 @@ extension MainViewController: UITableViewDelegate, UITableViewDataSource {
         }
     }
 }
+
+extension MainViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+    
+    private func openCamera() {
+        let imagePicker = UIImagePickerController()
+        imagePicker.sourceType = .camera
+        imagePicker.cameraFlashMode = .off
+        imagePicker.allowsEditing = true
+        imagePicker.delegate = self
+        present(imagePicker, animated: true, completion: nil)
+    }
+    
+    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+        
+        guard let image = info[.editedImage] as? UIImage else {
+            print("Image not found")
+            return
+        }
+        print(image.size)
+        imageToSend = image
+    }
+}
+
