@@ -46,6 +46,10 @@ class MainViewController: UIViewController {
         }
         page += 1
     }
+    
+    private func uploadInfo() {
+        NetworkManager.uploadInfo(with: selectedRow, image: imageToSend)
+    }
 }
 
 extension MainViewController: UITableViewDelegate, UITableViewDataSource {
@@ -105,6 +109,7 @@ extension MainViewController: UIImagePickerControllerDelegate, UINavigationContr
         }
         print(image.size)
         imageToSend = image
+        picker.dismiss(animated: true, completion: uploadInfo)
     }
 }
 
