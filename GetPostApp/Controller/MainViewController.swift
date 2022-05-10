@@ -41,14 +41,31 @@ class MainViewController: UIViewController {
                     self.mainView.tableView.reloadData()
                 }
             case .failure(let error):
-                print(error)
+                self.showMessage(title: "Error", message: error.localizedDescription)
             }
         }
         page += 1
     }
     
     private func uploadInfo() {
-        NetworkManager.uploadInfo(with: selectedRow, image: imageToSend)
+        NetworkManager.uploadInfo(with: selectedRow, image: imageToSend) { [weak self] result in
+            guard let self = self else { return }
+            switch result {
+            case .success(let response):
+                guard let response = response else { return }
+                DispatchQueue.main.async {
+                    self.showMessage(title: "Uploaded", message: "Status code: \(response.statusCode)")
+                }
+            case .failure(let error):
+                self.showMessage(title: "Error", message: error.localizedDescription)
+            }
+        }
+    }
+    
+    private func showMessage(title: String, message: String) {
+        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        alert.addAction(UIAlertAction.init(title: "OK", style: .default, handler: nil))
+        self.present(alert, animated: true, completion: nil)
     }
 }
 
@@ -59,12 +76,11 @@ extension MainViewController: UITableViewDelegate, UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "TableViewCell", for: indexPath) as! TableViewCell
-        cell.configurate(content[indexPath.row])       
+        cell.configurate(content[indexPath.row])
         return cell
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        print(self.content[indexPath.row].id)
         selectedRow = indexPath.row
         tableView.deselectRow(at: indexPath, animated: true)
         openCamera()
@@ -82,7 +98,7 @@ extension MainViewController: UITableViewDelegate, UITableViewDataSource {
         let inset = scrollView.contentInset
         let y = offset.y + bounds.size.height - inset.bottom
         let h = size.height
-       
+        
         guard let totalPages = MainViewController.totalPages else { return }
         if y == h && page < totalPages {
             getInfo()
@@ -104,10 +120,10 @@ extension MainViewController: UIImagePickerControllerDelegate, UINavigationContr
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
         
         guard let image = info[.editedImage] as? UIImage else {
-            print("Image not found")
+            showMessage(title: "Error", message: "Image not found")
             return
         }
-        print(image.size)
+        
         imageToSend = image
         picker.dismiss(animated: true, completion: uploadInfo)
     }
