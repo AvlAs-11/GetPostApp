@@ -43,7 +43,7 @@ final class NetworkManager {
         task.resume()
     }
     
-    static public func uploadInfo(with id: Int?, image: UIImage?) {
+    static public func uploadInfo(with id: Int?, image: UIImage?, completion: @escaping (Result<HTTPURLResponse?, Error>) -> Void) {
         
         let name = "AvlAs"
         let fileName = "Image.jpeg"
@@ -83,16 +83,14 @@ final class NetworkManager {
         data.append("\r\n--\(boundary)--\r\n".data(using: .utf8)!)
         
         session.uploadTask(with: request, from: data) { responseData, response, error in
+            
             if let error = error {
-                print("\(error.localizedDescription)")
+                completion(.failure(error))
             }
             
-            guard let responseData = responseData else {
-                return
-            }
-            
-            if let responseString = String(data: responseData, encoding: .utf8) {
-                print("uploaded to: \(responseString)")
+            else if responseData != nil {
+                let httpResponse = response as? HTTPURLResponse
+                completion(.success(httpResponse))
             }
         }.resume()
     }
