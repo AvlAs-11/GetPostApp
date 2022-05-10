@@ -42,4 +42,58 @@ final class NetworkManager {
         }
         task.resume()
     }
+    
+    static public func uploadInfo(with id: Int?, image: UIImage?) {
+        
+        let name = "AvlAs"
+        let fileName = "Image.jpeg"
+        let url = URL(string: postUrl)
+        
+        guard let url = url else { return }
+        
+        let nameField = "name"
+        let nameValue = name
+        
+        let idField = "typeId"
+        guard let idValue = id else { return }
+        
+        let config = URLSessionConfiguration.default
+        let session = URLSession(configuration: config)
+        let boundary = UUID().uuidString
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
+        
+        var data = Data()
+        
+        data.append("\r\n--\(boundary)\r\n".data(using: .utf8)!)
+        data.append("Content-Disposition: form-data; name=\"\(nameField)\"\r\n\r\n".data(using: .utf8)!)
+        data.append("\(nameValue)".data(using: .utf8)!)
+        
+        data.append("\r\n--\(boundary)\r\n".data(using: .utf8)!)
+        data.append("Content-Disposition: form-data; name=\"photo\"; filename=\"\(fileName)\"\r\n".data(using: .utf8)!)
+        data.append("Content-Type: image/jpeg\r\n\r\n".data(using: .utf8)!)
+        data.append((image?.jpegData(compressionQuality: 1))!)
+        
+        data.append("\r\n--\(boundary)\r\n".data(using: .utf8)!)
+        data.append("Content-Disposition: form-data; name=\"\(idField)\"\r\n\r\n".data(using: .utf8)!)
+        data.append("\(idValue)".data(using: .utf8)!)
+        
+        data.append("\r\n--\(boundary)--\r\n".data(using: .utf8)!)
+        
+        session.uploadTask(with: request, from: data) { responseData, response, error in
+            if let error = error {
+                print("\(error.localizedDescription)")
+            }
+            
+            guard let responseData = responseData else {
+                return
+            }
+            
+            if let responseString = String(data: responseData, encoding: .utf8) {
+                print("uploaded to: \(responseString)")
+            }
+        }.resume()
+    }
 }
